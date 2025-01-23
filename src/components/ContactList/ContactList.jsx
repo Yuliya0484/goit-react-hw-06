@@ -1,30 +1,32 @@
 import s from "./ContactList.module.css";
-import PropTypes from "prop-types";
 import Contact from "../Contact/Contact";
+import { useDispatch, useSelector } from "react-redux";
+import { deleteContact } from "../../redux/contactsSlice";
 
-const ContactList = ({ contacts, onDeleteContact }) => {
+const ContactList = () => {
+  const dispatch = useDispatch();
+
+  const StatusContacts = useSelector((state) => state.contacts.items);
+
+  const StatusFilter = useSelector((state) => state.filters.name);
+
+  const handleDelete = (id) => {
+    dispatch(deleteContact(id));
+  };
+  const filterContacts = StatusContacts.filter((contact) =>
+    contact.name
+      .trim()
+      .toLowerCase()
+      .includes(StatusFilter.trim().toLowerCase())
+  );
+
   return (
     <ul className={s.list}>
-      {contacts.map(({ id, name, number }) => (
-        <Contact
-          key={id}
-          name={name}
-          number={number}
-          onDelete={() => onDeleteContact(id)}
-        />
+      {filterContacts.map((item) => (
+        <Contact key={item.id} item={item} onDelete={handleDelete} />
       ))}
     </ul>
   );
-};
-ContactList.propTypes = {
-  contacts: PropTypes.arrayOf(
-    PropTypes.shape({
-      id: PropTypes.string.isRequired,
-      name: PropTypes.string.isRequired,
-      number: PropTypes.string.isRequired,
-    })
-  ).isRequired,
-  onDeleteContact: PropTypes.func.isRequired,
 };
 
 export default ContactList;

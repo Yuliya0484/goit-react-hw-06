@@ -2,10 +2,16 @@ import s from "./ContactForm.module.css";
 import { ErrorMessage, Field, Form, Formik } from "formik";
 import * as Yup from "yup";
 import { nanoid } from "nanoid";
-import PropTypes from "prop-types";
+import { addContact } from "../../redux/contactsSlice";
+import { useId } from "react";
+import { useDispatch } from "react-redux";
 
-const ContactForm = ({ onAddContact }) => {
+const ContactForm = () => {
   const initialValues = { name: "", number: "" };
+
+  const nameId = useId();
+  const numberId = useId();
+  const dispatch = useDispatch();
 
   const validationSchema = Yup.object({
     name: Yup.string()
@@ -13,17 +19,17 @@ const ContactForm = ({ onAddContact }) => {
       .max(50, "Максимум 50 символів")
       .required("Це поле обовʼязкове!"),
     number: Yup.string()
-      //.matches(/^\d{3}-\d{2}-\d{2}$/, "Не вірний формат номеру!")
       .min(7, "Мінімум 7 символів")
       .max(13, "Максимум 13 символів")
       .required("Це поле обовʼязкове!"),
   });
 
-  const handleSubmit = (values, { resetForm }) => {
-    const newContact = { id: nanoid(), ...values };
-    onAddContact(newContact);
-    resetForm();
+  const handleSubmit = (values, actions) => {
+    dispatch(
+      addContact({ id: nanoid(), name: values.name, number: values.number })
+    );
   };
+
   return (
     <div className={s.formWrapper}>
       <Formik
@@ -31,33 +37,30 @@ const ContactForm = ({ onAddContact }) => {
         initialValues={initialValues}
         validationSchema={validationSchema}
       >
-        {() => (
-          <Form className={s.form}>
-            <label className={s.label}>
-              <span>Name: </span>
-              <Field className={s.input} name="name" type="text" />
-              <ErrorMessage name="name" className={s.error} component="div" />
-            </label>
-            <label className={s.label}>
-              <span>Number: </span>
-              <Field
-                className={s.input}
-                name="number"
-                type="text"
-                placeholder="+38(000) 000 00 00"
-              />
-              <ErrorMessage name="number" className={s.error} component="div" />
-            </label>
-            <button className={s.button} type="submit">
-              Add contact
-            </button>
-          </Form>
-        )}
+        <Form className={s.form}>
+          <label htmlFor={nameId} className={s.label}>
+            <span>Name: </span>
+            <Field id={nameId} className={s.input} name="name" type="text" />
+            <ErrorMessage name="name" className={s.error} component="div" />
+          </label>
+          <label htmlFor={numberId} className={s.label}>
+            <span>Number: </span>
+            <Field
+              id={numberId}
+              className={s.input}
+              name="number"
+              type="text"
+              placeholder="+38(000) 000 00 00"
+            />
+            <ErrorMessage name="number" className={s.error} component="div" />
+          </label>
+          <button className={s.button} type="submit">
+            Add contact
+          </button>
+        </Form>
       </Formik>
     </div>
   );
 };
-ContactForm.propTypes = {
-  onAddContact: PropTypes.func.isRequired,
-};
+
 export default ContactForm;
